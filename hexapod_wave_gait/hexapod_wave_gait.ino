@@ -127,23 +127,24 @@ Leg legs[] = {
 };
 
 void loop() {
-  for (int i=0; i<6; ++i) {
-    legs[i].setLateralAngle(0);
-    legs[i].setHorizontalAngle(80);
-  }
-  delay(5000);
-
   const int num_legs = 6;
-  int gait_leg_offset[num_legs];
-  const int gait_resolution = 120;
-  for (int i=0; i<num_legs; ++i) {
-    gait_leg_offset[i] = i * (gait_resolution / num_legs);
-  }
-
-  const int up = 15;
+  const int up = 0;
   const int down = 60;
   const int back = -20;
   const int forward = 60;
+
+  for (int i=0; i<num_legs; ++i) {
+    legs[i].setLateralAngle(0);
+    legs[i].setHorizontalAngle(down);
+  }
+  delay(5000);
+
+  int gait_leg_order[] = {5,3,1,4,2,0};
+  int gait_leg_offset[num_legs];
+  const int gait_resolution = 120;
+  for (int i=0; i<num_legs; ++i) {
+    gait_leg_offset[gait_leg_order[i]] = (num_legs - i - 1) * (gait_resolution / num_legs);
+  }
 
   // we want the leg to come up in a nice arc without any jerking, so it looks smooth and natural
   // so we need to divide the forward sweep into two halves (up from ground to top of arc,
@@ -162,11 +163,11 @@ void loop() {
           legs[leg].setHorizontalAngle(down);
           legs[leg].setLateralAngle(map(leg_gait_pos, 0, forward_sweep_start - 1, forward, back));
         } else {          
-          if (leg_gait_pos <= forward_sweep_midpoint) {
+          if (leg_gait_pos < forward_sweep_midpoint) {
             // before forward_sweep_midpoint of arc
-            legs[leg].setHorizontalAngle(map(leg_gait_pos, forward_sweep_start, forward_sweep_midpoint, down, up));
+            legs[leg].setHorizontalAngle(map(leg_gait_pos, forward_sweep_start, forward_sweep_midpoint - 1, down, up));
           } else {
-            legs[leg].setHorizontalAngle(map(leg_gait_pos, forward_sweep_midpoint, gait_resolution, up, down));
+            legs[leg].setHorizontalAngle(map(leg_gait_pos, forward_sweep_midpoint, gait_resolution - 1, up, down));
           }
           legs[leg].setLateralAngle(map(leg_gait_pos, gait_resolution / 2, gait_resolution - 1, back, forward));
         }
